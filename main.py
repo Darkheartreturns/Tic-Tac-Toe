@@ -6,6 +6,9 @@ clock = pygame.time.Clock()
 running = True
 value = 1
 objects = []
+drawn_shapes = []
+color_b = (0, 0, 0)
+color_w = (255, 255, 255)
 def draw_board():
     pygame.draw.line(screen, (255, 255, 255), (320, 240), (960, 240), 5)
     pygame.draw.line(screen, (255, 255, 255), (320, 450), (960, 450), 5)
@@ -27,13 +30,29 @@ positions_list = [
     pygame.Rect(754, 459, 202, 145),
 ]
 
-#still working on it
-#def draw_o():
-#     pygame.draw.circle(screen, (255, 255, 255), )
+def draw_o(color,pos):
+    pygame.draw.circle(screen, color, pos, 20)
+
+def draw_x(color,pos):
+    x, y = pos
+    size = 20
+    pygame.draw.line(screen, color, (x-size, y-size), (x+size, y+size), 2)
+    pygame.draw.line(screen, color, (x-size, y+size), (x+size, y-size), 2)
 
 while running:
     screen.fill("black")
     draw_board()
+    draw_x(color_w, (80, 55))
+    for shape_type, shape_pos in drawn_shapes:
+        if shape_type == 'x':
+            draw_o(color_w, (1201, 55))
+            draw_x(color_w, shape_pos)
+            draw_x(color_b, (80, 55))
+        elif shape_type == 'o':
+            draw_x(color_w, (80, 55))
+            draw_o(color_w, shape_pos)
+            draw_o(color_b, (1201, 55))
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -41,9 +60,21 @@ while running:
             pos = event.pos
             objects.append(pos)
             mouse_rect = pygame.Rect(pos[0], pos[1], 1, 1)
-            #if mouse_rect.collidelistall(positions_list):
-                
-    pygame.display.update()
+            collided = mouse_rect.collidelistall(positions_list)
+            if collided:
+                if value == 1:
+                    collided_index = collided[0]
+                    collided_rect = positions_list[collided_index]
+                    drawn_shapes.append(('x', collided_rect.center))
+                    positions_list.pop(collided_index)
+                    value *= -1
+                elif value == -1:
+                    collided_index = collided[0]
+                    collided_rect = positions_list[collided_index]
+                    drawn_shapes.append(('o', collided_rect.center))
+                    positions_list.pop(collided_index)
+                    value *= -1
+    pygame.display.flip()
 
     clock.tick(60)
 print(objects)
